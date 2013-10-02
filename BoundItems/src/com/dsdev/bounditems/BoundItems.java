@@ -26,6 +26,8 @@ public class BoundItems extends JavaPlugin implements Listener {
     @Override
     public void onEnable()
     {
+        getServer().getPluginManager().registerEvents(this, this);
+        
         getLogger().info("BoundItems has been enabled!");
     }
     
@@ -41,13 +43,13 @@ public class BoundItems extends JavaPlugin implements Listener {
             
             Player p = (Player)sender;
             
-            if (args.length < 2)
+            if (args.length < 1)
             {
                 p.sendMessage("§6[§eBoundItems§6]§r Not enough arguments!");
                 return true;
             }
             
-            if (args[0].equals("set"))
+            if (args[0].equalsIgnoreCase("on"))
             {
                 ItemStack item = p.getItemInHand();
                 ItemMeta meta = item.getItemMeta();
@@ -56,8 +58,11 @@ public class BoundItems extends JavaPlugin implements Listener {
                 {
                     List<String> lore = meta.getLore();
                     for (String l : lore)
-                        if (l.startsWith("§8Bound to: "))
+                        if (l.startsWith("§8Bound to: ") || l.equals("§8<Not Bound>"))
+                        {
                             lore.remove(l);
+                            break;
+                        }
                     lore.add("§8<Not Bound>");
                     meta.setLore(lore);
                     item.setItemMeta(meta);
@@ -70,9 +75,9 @@ public class BoundItems extends JavaPlugin implements Listener {
                     item.setItemMeta(meta);
                 }
                 
-                p.sendMessage("§6[§eBoundItems§6]§r Item bindable/unbound.");
+                p.sendMessage("§6[§eBoundItems§6]§r Item was made bindable.");
             }
-            else if (args[0].equals("remove"))
+            else if (args[0].equalsIgnoreCase("off"))
             {
                 ItemStack item = p.getItemInHand();
                 ItemMeta meta = item.getItemMeta();
@@ -82,15 +87,49 @@ public class BoundItems extends JavaPlugin implements Listener {
                     List<String> lore = meta.getLore();
                     for (String l : lore)
                         if (l.startsWith("§8Bound to: ") || l.equals("§8<Not Bound>"))
+                        {
                             lore.remove(l);
+                            break;
+                        }
                     meta.setLore(lore);
                     item.setItemMeta(meta);
-                    p.sendMessage("§6[§eBoundItems§6]§r Item binding removed.");
+                }
+                
+                p.sendMessage("§6[§eBoundItems§6]§r Item binding removed.");
+            }
+            else if (args[0].equalsIgnoreCase("set"))
+            {
+                if (args.length < 2)
+                {
+                    p.sendMessage("§6[§eBoundItems§6]§r Not enough arguments!");
+                    return true;
+                }
+                
+                ItemStack item = p.getItemInHand();
+                ItemMeta meta = item.getItemMeta();
+                
+                if (meta.hasLore())
+                {
+                    List<String> lore = meta.getLore();
+                    for (String l : lore)
+                        if (l.startsWith("§8Bound to: ") || l.equals("§8<Not Bound>"))
+                        {
+                            lore.remove(l);
+                            break;
+                        }
+                    lore.add("§8Bound to: " + args[1]);
+                    meta.setLore(lore);
+                    item.setItemMeta(meta);
                 }
                 else
                 {
-                    p.sendMessage("§6[§eBoundItems§6]§r Item was not bound.");
+                    List<String> lore = new ArrayList<>();
+                    lore.add("§8Bound to: " + args[1]);
+                    meta.setLore(lore);
+                    item.setItemMeta(meta);
                 }
+                
+                p.sendMessage("§6[§eBoundItems§6]§r Item was bound to '" + args[1] + "'.");
             }
             
             return true;
@@ -104,6 +143,38 @@ public class BoundItems extends JavaPlugin implements Listener {
     @EventHandler(priority=EventPriority.LOW)
     public void onPlayerInteract(PlayerInteractEvent event)
     {
+        ItemStack item = event.getPlayer().getItemInHand();
         
+        if (item != null)
+        {
+            ItemMeta meta = item.getItemMeta();
+            
+            if (meta.hasLore())
+            {
+                for (String l : meta.getLore())
+                {
+                    if (l.startsWith("§8Bound to: "))
+                    {
+                        String playername = l.substring(12);
+                        
+                        if (!event.getPlayer().getName().equals(playername))
+                            event.setCancelled(true);
+                        
+                        break;
+                    }
+                    else if (l.equals("§8<Not Bound>"))
+                    {
+                        List<String> itemlore = meta.getLore();
+                        //itemlore.set(itemlore.indexOf(l), "§8Bound to: " + event.getPlayer().getName());
+                        itemlore.remove(l);
+                        itemlore.add("§8Bound to: " + event.getPlayer().getName());
+                        meta.setLore(itemlore);
+                        item.setItemMeta(meta);
+                        event.getPlayer().setItemInHand(item);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

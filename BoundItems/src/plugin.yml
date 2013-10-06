@@ -5,6 +5,6 @@ load: startup
 commands:
    bind:
       description: The main command for BoundItems.
-      usage: /<command> <subcommand> ...subcommand_args...
+      usage: /bind [enable|clear|set] <name>
       permission: bounditems.bind
       permission-message: You don't have permission for this.

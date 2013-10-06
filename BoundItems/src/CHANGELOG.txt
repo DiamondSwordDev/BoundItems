@@ -1,0 +1,7 @@
+==== VERSION 1.0 ====
+* Initial creation
+* Items can be bound to players
+* '/bind' commands
+   * '/bind enable' to enable binding
+   * '/bind clear' to remove binding capabilities
+   * '/bind set <name>' for manual item binding

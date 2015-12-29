@@ -1,0 +1,10 @@
+name: BoundItems
+main: com.dsdev.bounditems.BoundItems
+version: 1.0
+load: startup
+commands:
+   bind:
+      description: The main command for BoundItems.
+      usage: /bind [enable|clear|set] <name>
+      permission: bounditems.bind
+      permission-message: You don't have permission for this.
